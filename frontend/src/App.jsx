@@ -14,21 +14,22 @@ import {
   simulateReset,
   uploadDocument
 } from './services/api';
+import { 
+  getLocalApplications, 
+  getLocalLedger, 
+  getLocalSimulation 
+} from './services/mockData';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState('OFFICER'); // 'COLLEGE' | 'OFFICER'
   const [activeTab, setActiveTab] = useState('kanban'); // 'kanban' | 'ledger' | 'clusters'
-  const [applications, setApplications] = useState([]);
-  const [auditLedger, setAuditLedger] = useState([]);
-  const [simulationState, setSimulationState] = useState({
-    isSimulated: false,
-    daysForwarded: 0,
-    escalations: []
-  });
+  const [applications, setApplications] = useState(() => getLocalApplications());
+  const [auditLedger, setAuditLedger] = useState(() => getLocalLedger());
+  const [simulationState, setSimulationState] = useState(() => getLocalSimulation());
   const [revertModalApp, setRevertModalApp] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Load applications and audit trail from Express backend
+  // Load applications and audit trail from Express backend if reachable
   const loadInitialData = async () => {
     try {
       const [appsRes, ledgerRes] = await Promise.all([
@@ -36,19 +37,17 @@ export default function App() {
         fetchAuditLedger().catch(() => ({ success: false }))
       ]);
 
-      if (appsRes?.data) {
+      if (appsRes?.data && appsRes.data.length > 0) {
         setApplications(appsRes.data);
         if (appsRes.simulation) {
           setSimulationState(appsRes.simulation);
         }
       }
-      if (ledgerRes?.data) {
+      if (ledgerRes?.data && ledgerRes.data.length > 0) {
         setAuditLedger(ledgerRes.data);
       }
     } catch (err) {
-      console.error("Failed to load initial backend data:", err);
-    } finally {
-      setLoading(false);
+      console.warn("Using offline mock store:", err);
     }
   };
 
