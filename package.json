@@ -1,0 +1,23 @@
+{
+  "name": "aicte-approval-workflow-platform",
+  "version": "1.0.0",
+  "description": "AICTE Approval Workflow Automation Platform - Production-Ready Enterprise Prototype",
+  "scripts": {
+    "dev:backend": "node --watch backend/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:ai": "python ai-service/app.py"
+  },
+  "keywords": [
+    "aicte",
+    "bpm",
+    "workflow",
+    "react",
+    "express",
+    "fastapi",
+    "rag",
+    "blockchain",
+    "audit-ledger"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "MIT"
+}
