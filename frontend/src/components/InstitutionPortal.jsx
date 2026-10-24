@@ -91,7 +91,7 @@ export default function InstitutionPortal({
         </div>
 
         {/* Tab Pills */}
-        <div className="flex items-center gap-1.5 bg-navy-800 p-1.5 rounded-lg border border-navy-700 text-xs">
+        <div className="flex items-center gap-1.5 bg-navy-800 p-1.5 rounded-lg border border-navy-700 text-xs overflow-x-auto max-w-full whitespace-nowrap">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`px-3 py-1.5 rounded-md font-semibold transition-all ${

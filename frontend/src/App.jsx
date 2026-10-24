@@ -58,6 +58,18 @@ export default function App() {
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Responsive Sidebar Controls
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth >= 1024) {
+      setIsDesktopCollapsed(prev => !prev);
+    } else {
+      setMobileSidebarOpen(prev => !prev);
+    }
+  };
+
   // Load initial data
   const loadData = async () => {
     try {
@@ -219,16 +231,19 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-canvas overflow-hidden">
-      {/* Left Persistent Sidebar */}
+      {/* Left Responsive Sidebar (Drawer on mobile, Collapsible on desktop) */}
       <Sidebar 
         currentView={currentView} 
         setCurrentView={setCurrentView} 
         activeRole={activeRole} 
+        isOpen={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+        isDesktopCollapsed={isDesktopCollapsed}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Navigation Bar */}
+        {/* Top Navigation Bar with Toggle Button */}
         <TopHeader
           activeRole={activeRole}
           setActiveRole={setActiveRole}
@@ -238,6 +253,7 @@ export default function App() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           setCurrentView={setCurrentView}
+          onToggleSidebar={handleToggleSidebar}
         />
 
         {/* Floating Toast Notification */}
@@ -249,7 +265,7 @@ export default function App() {
         )}
 
         {/* Scrollable Page View Container */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">
           <div className="max-w-7xl mx-auto">
             {currentView === 'overview' && (
               <OverviewDashboard 

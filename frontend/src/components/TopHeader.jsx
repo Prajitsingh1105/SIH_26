@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  Menu,
   Search, 
   Bell, 
   UserCheck, 
@@ -18,7 +19,8 @@ export default function TopHeader({
   onResetDemo, 
   searchQuery, 
   setSearchQuery,
-  setCurrentView
+  setCurrentView,
+  onToggleSidebar
 }) {
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -45,25 +47,36 @@ export default function TopHeader({
   };
 
   return (
-    <header className="h-16 bg-white border-b border-app-border px-6 flex items-center justify-between shadow-nav select-none z-30 sticky top-0">
-      {/* Global Search Bar */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
-        <div className="relative w-full">
+    <header className="h-16 bg-white border-b border-app-border px-3 sm:px-6 flex items-center justify-between shadow-nav select-none z-30 sticky top-0 gap-2">
+      {/* Left: Sidebar Toggle Button & Global Search */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-lg">
+        {/* Sidebar Toggle Hamburger Button */}
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
+          title="Toggle Navigation Sidebar"
+          aria-label="Toggle Navigation Sidebar"
+        >
+          <Menu className="w-5 h-5 text-slate-700" />
+        </button>
+
+        {/* Global Search Bar */}
+        <div className="relative flex-1 min-w-0">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by Docket ID (e.g. 9401), Institution, or Region..."
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+            placeholder="Search Docket ID, College, City..."
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all truncate"
           />
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-4">
-        {/* Hackathon Badge */}
-        <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-teal/10 border border-teal/20 text-teal text-[11px] font-semibold">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Hackathon Badge (Hidden on mobile) */}
+        <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-teal/10 border border-teal/20 text-teal text-[11px] font-semibold">
           <span className="w-2 h-2 rounded-full bg-teal animate-pulse" />
           <span>SIH 2026 • SIH26262 • Team StrataX</span>
         </div>
@@ -76,7 +89,7 @@ export default function TopHeader({
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-lg bg-white transition-all shadow-sm"
         >
           <RotateCcw className={`w-3.5 h-3.5 text-slate-500 ${isResetting ? 'animate-spin text-primary' : ''}`} />
-          <span className="hidden sm:inline">Reset Demo</span>
+          <span className="hidden md:inline">Reset Demo</span>
         </button>
 
         {/* Notifications Popover */}
@@ -84,6 +97,8 @@ export default function TopHeader({
           <button
             onClick={() => setShowNotifDropdown(!showNotifDropdown)}
             className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title="View Omnichannel Alerts"
+            aria-label="View Omnichannel Alerts"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
@@ -94,10 +109,10 @@ export default function TopHeader({
           </button>
 
           {showNotifDropdown && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-modal p-3 z-50 text-xs">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-xs sm:w-80 bg-white border border-slate-200 rounded-xl shadow-modal p-3 z-50 text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
                 <span className="font-semibold text-slate-800">Omnichannel Alerts</span>
-                <span className="text-[10px] text-teal font-medium cursor-pointer" onClick={() => setCurrentView('notifications')}>
+                <span className="text-[10px] text-teal font-medium cursor-pointer" onClick={() => { setShowNotifDropdown(false); setCurrentView('notifications'); }}>
                   View All ({notifications.length})
                 </span>
               </div>
@@ -117,7 +132,7 @@ export default function TopHeader({
                     <p className="text-[11px] text-slate-600 line-clamp-2">{n.message}</p>
                     <div className="flex items-center justify-between mt-1 text-[9px] text-slate-400">
                       <span>{n.recipient}</span>
-                      <span className="text-emerald-600">{n.deliveryStatus}</span>
+                      <span className="text-emerald-600 font-semibold">{n.deliveryStatus}</span>
                     </div>
                   </div>
                 ))}
@@ -126,24 +141,24 @@ export default function TopHeader({
           )}
         </div>
 
-        {/* Role Switcher (Crucial for SIH Evaluators) */}
+        {/* Role Switcher */}
         <div className="relative">
           <button
             onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs transition-colors"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs transition-colors"
           >
-            <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">
+            <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0">
               {currentRoleObj.label.charAt(0)}
             </div>
-            <div className="text-left hidden sm:block">
-              <div className="font-semibold text-slate-800 leading-none">{currentRoleObj.label}</div>
-              <div className="text-[10px] text-slate-500 leading-tight mt-0.5">{currentRoleObj.sub}</div>
+            <div className="text-left hidden sm:block max-w-[140px] truncate">
+              <div className="font-semibold text-slate-800 leading-none truncate">{currentRoleObj.label}</div>
+              <div className="text-[10px] text-slate-500 leading-tight mt-0.5 truncate">{currentRoleObj.sub}</div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-1" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
           </button>
 
           {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-modal p-2 z-50 text-xs">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-xs sm:w-72 bg-white border border-slate-200 rounded-xl shadow-modal p-2 z-50 text-xs">
               <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 Switch Perspective (SIH Demo)
               </div>
@@ -160,7 +175,7 @@ export default function TopHeader({
                       <div className="font-medium text-xs">{role.label}</div>
                       <div className="text-[10px] text-slate-500">{role.sub}</div>
                     </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono shrink-0 ml-1">
                       {role.badge}
                     </span>
                   </button>
