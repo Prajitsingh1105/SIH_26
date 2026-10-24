@@ -4,38 +4,43 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#09090B',
-        panel: '#121215',
-        subtle: '#18181B',
-        hover: '#222227',
-        border: 'rgba(255, 255, 255, 0.08)',
-        'border-subtle': 'rgba(255, 255, 255, 0.04)',
-        'border-strong': 'rgba(255, 255, 255, 0.14)',
+        navy: {
+          900: '#0A192F',
+          800: '#11243A',
+          700: '#1B3A5B',
+          600: '#234C75',
+          500: '#2C5E8F',
+        },
         primary: {
-          DEFAULT: '#3B82F6',
-          hover: '#2563EB',
-          subtle: 'rgba(59, 130, 246, 0.08)',
-          border: 'rgba(59, 130, 246, 0.25)'
+          DEFAULT: '#1E40AF',
+          hover: '#1D4ED8',
+          light: '#3B82F6',
+          subtle: '#EFF6FF',
         },
-        success: {
-          DEFAULT: '#10B981',
-          subtle: 'rgba(16, 185, 129, 0.08)',
-          border: 'rgba(16, 185, 129, 0.2)'
+        teal: {
+          DEFAULT: '#0D9488',
+          dark: '#0F766E',
+          light: '#14B8A6',
+          subtle: '#F0FDFA',
         },
-        warning: {
-          DEFAULT: '#F59E0B',
-          subtle: 'rgba(245, 158, 11, 0.08)',
-          border: 'rgba(245, 158, 11, 0.25)'
+        cyan: {
+          DEFAULT: '#06B6D4',
+          accent: '#22D3EE',
         },
-        danger: {
-          DEFAULT: '#EF4444',
-          subtle: 'rgba(239, 68, 68, 0.08)',
-          border: 'rgba(239, 68, 68, 0.3)'
-        }
+        canvas: '#F4F7FB',
+        surface: '#FFFFFF',
+        'app-text': {
+          primary: '#172033',
+          secondary: '#64748B',
+          muted: '#94A3B8',
+        },
+        'app-border': '#E2E8F0',
+        'app-success': '#16A34A',
+        'app-warning': '#F59E0B',
+        'app-error': '#DC2626',
       },
       fontFamily: {
         sans: [
@@ -50,17 +55,15 @@ export default {
           '"JetBrains Mono"',
           '"SF Mono"',
           'Menlo',
-          'Monaco',
           'Consolas',
           'monospace'
         ]
       },
       boxShadow: {
-        'bezel': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.5)',
-        'bezel-hover': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 4px 12px 0 rgba(0, 0, 0, 0.6)',
-        'modal': '0 20px 48px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
-        'subtle-blue': '0 0 20px -3px rgba(59, 130, 246, 0.15)',
-        'alert-glow': '0 0 24px -2px rgba(239, 68, 68, 0.25)'
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+        'nav': '0 2px 4px 0 rgba(10, 25, 47, 0.08)',
       }
     },
   },

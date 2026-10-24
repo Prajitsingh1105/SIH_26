@@ -1,0 +1,288 @@
+// =============================================================================
+// AICTE Integrated Approval Workflow Automation Platform (SIH26262)
+// Team StrataX - PostgreSQL / PostGIS / pgvector Prisma Schema
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  REGIONAL_HEAD
+  SCRUTINY_OFFICER
+  INSTITUTION_USER
+  EVC_MEMBER
+}
+
+enum ApplicationStage {
+  REGISTRATION
+  SUBMITTED
+  DOC_VALIDATION
+  SCRUTINY
+  DEFICIENCY
+  REVERIFICATION
+  EVC_QUEUE
+  EVC_VISIT
+  INSPECTION_REPORT
+  SAC_FINAL
+  APPROVED
+  REJECTED
+}
+
+enum SLAStatus {
+  ON_TRACK
+  WARNING
+  BREACHED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DocumentCategory {
+  LAND_TITLE
+  BUILDING_SAFETY
+  FIRE_SAFETY
+  FACULTY_ROSTER
+  ACCREDITATION
+  BARRIER_FREE
+  EVC_EVIDENCE
+  LOA
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  DEFICIENT
+  EXPIRED_ACTION_REQUIRED
+}
+
+enum NotificationChannel {
+  IN_APP
+  SMS
+  WHATSAPP
+  EMAIL
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// 1. Users & RBAC
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  role          Role           @default(INSTITUTION_USER)
+  region        String?
+  bureau        String?
+  institutionId String?
+  institution   Institution?   @relation(fields: [institutionId], references: [id])
+  officer       OfficerProfile?
+  notifications Notification[]
+  auditEntries  AuditEntry[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+// 2. Institutions
+model Institution {
+  id              String        @id @default(uuid())
+  code            String        @unique
+  name            String
+  type            String
+  region          String
+  city            String
+  state           String
+  latitude        Float
+  longitude       Float
+  establishedYear Int
+  principalName   String
+  users           User[]
+  applications    Application[]
+  documents       Document[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+// 3. Applications
+model Application {
+  id                 String                  @id
+  institutionId      String
+  institution        Institution             @relation(fields: [institutionId], references: [id])
+  applicationType    String
+  submittedDate      DateTime                @default(now())
+  currentStage       ApplicationStage        @default(SUBMITTED)
+  previousStage      ApplicationStage?
+  slaDeadlineDays    Int                     @default(14)
+  slaDeadline        DateTime
+  slaElapsedPercent  Int                     @default(0)
+  slaStatus          SLAStatus               @default(ON_TRACK)
+  riskLevel          RiskLevel               @default(LOW)
+  assignedOfficerId  String?
+  assignedOfficer    OfficerProfile?         @relation(fields: [assignedOfficerId], references: [id])
+  evcCluster         String?
+  revertReason       String?
+  documents          Document[]
+  timeline           ApplicationTimeline[]
+  escalations        Escalation[]
+  evcVisits          EVCVisit[]
+  auditEntries       AuditEntry[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+}
+
+// 4. Application Timeline & History
+model ApplicationTimeline {
+  id            String           @id @default(uuid())
+  applicationId String
+  application   Application      @relation(fields: [applicationId], references: [id])
+  stage         ApplicationStage
+  actor         String
+  note          String?
+  timestamp     DateTime         @default(now())
+}
+
+// 5. Scrutiny Officers
+model OfficerProfile {
+  id             String        @id @default(uuid())
+  userId         String        @unique
+  user           User          @relation(fields: [userId], references: [id])
+  name           String
+  region         String
+  expertise      String
+  activeDockets  Int           @default(0)
+  maxCapacity    Int           @default(10)
+  availability   String        @default("AVAILABLE")
+  rating         Float         @default(4.8)
+  applications   Application[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// 6. Documents & Statutory Compliance
+model Document {
+  id                 String             @id @default(uuid())
+  institutionId      String
+  institution        Institution        @relation(fields: [institutionId], references: [id])
+  applicationId      String?
+  application        Application?       @relation(fields: [applicationId], references: [id])
+  name               String
+  category           DocumentCategory
+  fileReference      String?
+  hashSha256         String
+  issueDate          DateTime?
+  expiryDate         DateTime?
+  verificationStatus VerificationStatus @default(PENDING)
+  lastVerifiedAt     DateTime?
+  lastVerifiedBy     String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+// 7. EVC Logistics & Visits
+model EVCVisit {
+  id               String            @id
+  applicationId    String
+  application      Application       @relation(fields: [applicationId], references: [id])
+  scheduledDate    DateTime
+  status           String            @default("SCHEDULED")
+  committeeLead    String
+  members          String[]
+  checklist        Json?
+  inspectionReport InspectionReport?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model InspectionReport {
+  id             String    @id @default(uuid())
+  evcVisitId     String    @unique
+  evcVisit       EVCVisit  @relation(fields: [evcVisitId], references: [id])
+  score          Int
+  verdict        String
+  remarks        String
+  submittedAt    DateTime  @default(now())
+}
+
+// 8. SLA Escalations
+model Escalation {
+  id            String               @id @default(uuid())
+  applicationId String
+  application   Application          @relation(fields: [applicationId], references: [id])
+  severity      NotificationPriority @default(HIGH)
+  reason        String
+  escalatedTo   String
+  acknowledged  Boolean              @default(false)
+  resolvedAt    DateTime?
+  resolutionNote String?
+  createdAt     DateTime             @default(now())
+}
+
+// 9. Omnichannel Notifications
+model Notification {
+  id             String               @id @default(uuid())
+  userId         String?
+  user           User?                @relation(fields: [userId], references: [id])
+  title          String
+  message        String
+  channel        NotificationChannel  @default(IN_APP)
+  priority       NotificationPriority @default(MEDIUM)
+  applicationId  String?
+  recipient      String
+  read           Boolean              @default(false)
+  deliveryStatus String               @default("DELIVERED")
+  createdAt      DateTime             @default(now())
+}
+
+// 10. Tamper-Evident SHA-256 Audit Ledger
+model AuditEntry {
+  id            Int          @id @default(autoincrement())
+  blockNumber   Int          @unique
+  eventId       String       @unique
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id])
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+  actor         String
+  role          String
+  action        String
+  payload       Json
+  prevHash      String
+  currentHash   String
+  timestamp     DateTime     @default(now())
+}
+
+// 11. APH Knowledge Base & Chunks (pgvector)
+model APHKnowledgeChunk {
+  id         String   @id @default(uuid())
+  chapter    String
+  clause     String
+  content    String
+  tags       String[]
+  // In PostgreSQL with pgvector extension:
+  // embedding Unsupported("vector(1536)")?
+  createdAt  DateTime @default(now())
+}
+
+// 12. System Configuration & SLA Rules
+model SystemConfiguration {
+  id          String   @id @default(uuid())
+  configKey   String   @unique
+  configValue Json
+  updatedAt   DateTime @updatedAt
+}
